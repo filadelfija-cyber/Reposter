@@ -1,13 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using log4net;
 using log4net.Appender;
 using log4net.Config;
@@ -21,6 +11,17 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using SeleniumExtras.WaitHelpers;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net.NetworkInformation;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace odnoklassniki_selenium;
 
@@ -69,8 +70,12 @@ internal class Program
 	public static async Task StartPromoting()
 	{
 		Stopwatch sw = Stopwatch.StartNew();
-		logger.Info((object)$"Версия программы: {Assembly.GetExecutingAssembly().GetName().Version}");
-		logger.Info((object)$"Программа начала свою работу. {DateTime.Now}");
+
+        DateTime buildDate = GetBuildDate(Assembly.GetExecutingAssembly());
+
+        logger.Info((object)$"Версия программы: {Assembly.GetExecutingAssembly().GetName().Version}");
+        logger.Info((object)$"Дата сборки: {buildDate:yyyy-MM-dd HH:mm:ss} UTC");
+        logger.Info((object)$"Программа начала свою работу. {DateTime.Now}");
 		if (status.IsStarted && status.ShowStatistics)
 		{
 		}
@@ -121,9 +126,22 @@ internal class Program
 		}
 		options.AddArgument("--user-data-dir=C:\\Users\\user\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1");
 		options.AddArgument("--profile-directory=Profile 1");
-		if (driver == null)
+
+	isDriverNull: if (driver == null)
 		{
-			driver = new ChromeDriver(options);
+			try
+			{
+				driver = new ChromeDriver(options);
+
+			}
+			catch (Exception)
+			{
+				foreach (var process in Process.GetProcessesByName("chrome"))
+				{
+					process.Kill();
+				}
+				goto isDriverNull;
+            }
 		}
 		logger.Info((object)$"Удаление данных куки...Сейчас имеется {driver.Manage().Cookies.AllCookies.Count}");
 		driver.Manage().Cookies.DeleteAllCookies();
@@ -726,7 +744,7 @@ internal class Program
 			status.IsStopping = true;
 			return;
 		}
-		js.ExecuteScript("window.scrollBy(0,100)");
+		js.ExecuteScript("window.scrollBy(0,300)");
 		js.ExecuteScript("const elementToRemove = document.querySelector(\"#hook_Block_TipBlock\");if (elementToRemove){elementToRemove.remove();}");
 		groupDictionary = groupDictionary.RemoveItemsByValue(groupsToRemoveFromSharing);
 		int groupNumber = 0;
@@ -907,7 +925,12 @@ internal class Program
 					try
 					{
 						WebDriverWait wait35 = new WebDriverWait(driver, TimeSpan.FromSeconds(10.0));
-						IWebElement shareInGroups = wait35.Until(ExpectedConditions.ElementToBeClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div")));
+                        //Пункт меню "Поделиться в группе"
+                        //css вариант - div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div
+                        // XPath вариант //div[starts-with(@id, 'block_ShortcutMenu_null')]/ul/div/a[contains(text(), 'Поделиться в группе')]/div
+
+                        IWebElement shareInGroups = wait35.Until(ExpectedConditions.ElementToBeClickable(By
+								.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div")));
 						shareInGroups.Click();
 					}
 					catch (Exception ex11)
@@ -922,7 +945,7 @@ internal class Program
 						{
 							IWebElement shareBtn2 = driver.ClickElement(By.CssSelector("#reshare_XpostGroupNameInput"));
 							js.ExecuteScript("const element = document.querySelector(\"#reshare_XpostGroupNameInput\");if (element){element.value = '" + group.Value.Trim() + "';}");
-							await Task.Delay(rnd.Next(500, 1000));
+                            await Task.Delay(rnd.Next(500, 1000));
 							shareBtn2.SendKeys(" ");
 							shareBtn2.SendKeys(Keys.Backspace);
 						}
@@ -1139,4 +1162,44 @@ internal class Program
 	internal static void StopPromoting()
 	{
 	}
+
+    private static DateTime GetBuildDate(Assembly assembly)
+    {
+        // Search through custom attributes for the "BuildDate" key
+        var attributes = assembly.GetCustomAttributes<AssemblyMetadataAttribute>();
+
+        foreach (var attribute in attributes)
+        {
+            if (attribute.Key == "BuildDate" && !string.IsNullOrEmpty(attribute.Value))
+            {
+                // Parse the string back into a DateTime object
+                if (DateTime.TryParseExact(attribute.Value, "yyyy-MM-dd  HH:mm:ss",
+                    CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime date))
+                {
+                    return date;
+                }
+            }
+        }
+        return DateTime.MinValue;
+    }
+
+    public static DateTime GetLinkerTime(Assembly assembly)
+    {
+        const string dateFormat = "yyyy-MM-ddTHH:mm:ss";
+
+        var attribute = assembly
+          .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+
+        if (attribute?.InformationalVersion != null)
+        {
+
+			return DateTime.ParseExact(
+				attribute.InformationalVersion,
+				dateFormat,
+				CultureInfo.InvariantCulture);
+
+        }
+        return default;
+    }
+
 }
