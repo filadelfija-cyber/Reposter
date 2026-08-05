@@ -41,4 +41,6 @@ internal class Settings
 	public int Parallelism { get; set; } = 1;
 
 	public bool UseBot { get; set; }
+
+	public bool Test { get; set; } = false;
 }

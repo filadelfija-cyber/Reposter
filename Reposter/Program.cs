@@ -143,11 +143,15 @@ internal class Program
 				goto isDriverNull;
             }
 		}
-		logger.Info((object)$"Удаление данных куки...Сейчас имеется {driver.Manage().Cookies.AllCookies.Count}");
-		driver.Manage().Cookies.DeleteAllCookies();
-		Dictionary<string, object> param = new Dictionary<string, object>();
-		driver.ExecuteCdpCommand("Storage.clearCookies", param);
-		logger.Info((object)$"Куки удалены...Сейчас имеется {driver.Manage().Cookies.AllCookies.Count}");
+		if (!settings.Test)
+		{
+			logger.Info((object)$"Удаление данных куки...Сейчас имеется {driver.Manage().Cookies.AllCookies.Count}");
+			driver.Manage().Cookies.DeleteAllCookies();
+			Dictionary<string, object> param = new Dictionary<string, object>();
+			driver.ExecuteCdpCommand("Storage.clearCookies", param);
+			logger.Info((object)$"Куки удалены...Сейчас имеется {driver.Manage().Cookies.AllCookies.Count}");
+		}
+
 		while (true)
 		{
 			logger.Info((object)"Попытка перейти на основную страницу...");
@@ -186,6 +190,16 @@ internal class Program
 				logger.Info((object)$"Работа с аккаунтом '{account.Login}' {stat.ProcessedAccountCount}/{settings.Accounts.Count}");
 				if (status.IsStarted && status.ShowStatistics)
 				{
+				}
+
+				IWebElement testElement;
+				if (settings.Test)
+				{
+					var menu = driver.FindElement(By.CssSelector("#hook_Block_AdaptiveNavigation > div > adaptive-menu > nav"));
+					if (menu != null)
+					{
+						goto modal_close;
+                    }
 				}
 				IWebElement loginTextBox = driver.ClickElement(By.CssSelector("#field_email"), 20);
 				loginTextBox.Clear();
@@ -242,7 +256,7 @@ internal class Program
 					stat.ProcessedAccounts.Add(currentlyProcessedAccount);
 					continue;
 				}
-				try
+			modal_close: try
 				{
 					driver.Find(By.CssSelector("div > button[aria-label='Закрыть'][class*='modal_close']"))?.Click();
 				}
@@ -286,11 +300,16 @@ internal class Program
 					if (status.IsStarted && status.ShowStatistics)
 					{
 					}
-					logger.Info((object)$"Удаление данных куки...Сейчас имеется {driver.Manage().Cookies.AllCookies.Count}");
-					driver.Manage().Cookies.DeleteAllCookies();
-					Dictionary<string, object> parameters = new Dictionary<string, object>();
-					driver.ExecuteCdpCommand("Storage.clearCookies", parameters);
-					logger.Info((object)$"Куки удалены...Сейчас имеется {driver.Manage().Cookies.AllCookies.Count}");
+					if (!settings.Test)
+					{
+                        logger.Info((object)$"Удаление данных куки...Сейчас имеется {driver.Manage().Cookies.AllCookies.Count}");
+                        driver.Manage().Cookies.DeleteAllCookies();
+                        Dictionary<string, object> parameters = new Dictionary<string, object>();
+                        driver.ExecuteCdpCommand("Storage.clearCookies", parameters);
+                        logger.Info((object)$"Куки удалены...Сейчас имеется {driver.Manage().Cookies.AllCookies.Count}");
+                    }
+
+
 					await driver.GoToUrl("https://ok.ru");
 					driver.Navigate().Refresh();
 				}
