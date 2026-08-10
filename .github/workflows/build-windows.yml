@@ -1,0 +1,32 @@
+name: .NET Framework 4.8 CI
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    # 1. Check out the source code
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    # 2. Install and configure MSBuild
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    # 3. Install and configure NuGet CLI
+    - name: Setup NuGet
+      uses: nuget/setup-nuget@v1
+      with:
+        nuget-version: 'latest'
+
+    # 4. Restore third-party packages
+    - name: Restore NuGet Packages
+      run: nuget restore Reposter.sln
+
+    # 5. Compile the C# solution using MSBuild
+    - name: Build Solution
+      run: msbuild Reposter.sln /p:Configuration=Debug /p:Platform="Any CPU"
