@@ -30,3 +30,11 @@ jobs:
     # 5. Compile the C# solution using MSBuild
     - name: Build Solution
       run: msbuild Reposter.slnx /p:Configuration=Debug /p:Platform="Any CPU"
+
+    # 6. Upload the built files so you can download them from GitHub
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: Reposter
+        path: ${{ github.workspace }}\build_output\
+        if-no-files-found: error
