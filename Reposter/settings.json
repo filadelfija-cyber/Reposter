@@ -1,0 +1,22 @@
+{
+  "Accounts": [
+    {
+      "Login": "login",
+      "Password": "password"
+    }
+   ],
+  "AddComments": false,
+  "ShareInGroups": true,
+  "ShareInFriends": false,
+  "ShareInGroupsDirectly":false,
+  "PageForSharing": "https://ok.ru/profile/602042863935",
+  "Headless":false,
+  "ShowLogInConsole":false,
+  "TakeScreenShotsOnErrors":false,
+  "ShutdownAfterFinish":false,
+  "ExitAfterFinish":false,
+  "DisableWebDriverLogging":true,
+  "RetryOnFaultyRun":true,
+  "PageLoadStrategyEager":false,
+  "UseBot":false
+}
