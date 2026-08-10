@@ -36,5 +36,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Reposter
-        path: ${{ github.workspace }}\bin\Debug\
+        path: ${{ github.workspace }}\Reposter\bin\Debug\
         if-no-files-found: error
