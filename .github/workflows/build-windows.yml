@@ -25,8 +25,8 @@ jobs:
 
     # 4. Restore third-party packages
     - name: Restore NuGet Packages
-      run: nuget restore Reposter.sln
+      run: nuget restore Reposter.slnx
 
     # 5. Compile the C# solution using MSBuild
     - name: Build Solution
-      run: msbuild Reposter.sln /p:Configuration=Debug /p:Platform="Any CPU"
+      run: msbuild Reposter.slnx /p:Configuration=Debug /p:Platform="Any CPU"
