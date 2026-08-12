@@ -47,8 +47,8 @@ internal static class SeleniumExtensions
 					return null;
 				}
 				attemptsCounter++;
-				WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(waitSeconds));
-				webElement = wait.Until(ExpectedConditions.ElementToBeClickable((IWebElement)by));
+				//WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(waitSeconds));
+				webElement = driver.WaitUntilClickable(by, waitSeconds);
 				webElement.Click();
 			}
 			catch (Exception ex)

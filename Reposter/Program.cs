@@ -127,6 +127,7 @@ internal class Program
 			options.AddArgument("--disable-logging");
 			options.AddArgument("--log-level=3");
 		}
+		//TODO check later
 		//options.AddArgument("--user-data-dir=C:\\Users\\user\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1");
 		//options.AddArgument("--profile-directory=Profile 1");
 
@@ -195,7 +196,7 @@ internal class Program
 				{
 				}
 
-				if (settings.Test)
+				if (settings.Test && driver.Manage().Cookies.AllCookies.Count > 0) //TODO improve check
 				{
 					var menu = driver.FindElement(By.CssSelector("#hook_Block_AdaptiveNavigation > div > adaptive-menu > nav"));
 					if (menu != null)
@@ -1214,25 +1215,6 @@ internal class Program
             }
         }
         return DateTime.MinValue;
-    }
-
-    public static DateTime GetLinkerTime(Assembly assembly)
-    {
-        const string dateFormat = "yyyy-MM-ddTHH:mm:ss";
-
-        var attribute = assembly
-          .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-
-        if (attribute?.InformationalVersion != null)
-        {
-
-			return DateTime.ParseExact(
-				attribute.InformationalVersion,
-				dateFormat,
-				CultureInfo.InvariantCulture);
-
-        }
-        return default;
     }
 
 }
