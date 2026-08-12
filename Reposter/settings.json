@@ -1,8 +1,8 @@
 {
   "Accounts": [
     {
-      "Login": "login",
-      "Password": "password"
+      "Login": "qer-ra-ra-ra",
+      "Password": "fylhtqnl1"
     }
    ],
   "AddComments": false,
@@ -18,5 +18,6 @@
   "DisableWebDriverLogging":true,
   "RetryOnFaultyRun":true,
   "PageLoadStrategyEager":false,
-  "UseBot":false
+  "UseBot": false,
+  "Test": true
 }

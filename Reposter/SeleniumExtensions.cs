@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using SeleniumExtras.WaitHelpers;
+using Reposter;
 
 namespace odnoklassniki_selenium;
 
@@ -48,7 +48,7 @@ internal static class SeleniumExtensions
 				}
 				attemptsCounter++;
 				WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(waitSeconds));
-				webElement = wait.Until(ExpectedConditions.ElementToBeClickable(by));
+				webElement = wait.Until(ExpectedConditions.ElementToBeClickable((IWebElement)by));
 				webElement.Click();
 			}
 			catch (Exception ex)
@@ -100,4 +100,34 @@ internal static class SeleniumExtensions
 	{
 		return dictionary.Where((KeyValuePair<TKey, TValue> kvp) => !valuesToRemove.Contains(kvp.Value)).ToDictionary((KeyValuePair<TKey, TValue> kvp) => kvp.Key, (KeyValuePair<TKey, TValue> kvp) => kvp.Value);
 	}
+
+    public static IWebElement WaitUntilClickable(this IWebDriver driver, By locator, int timeoutInSeconds = 10)
+    {
+        var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(timeoutInSeconds));
+
+        return wait.Until(d =>
+        {
+            try
+            {
+                // 1. Пытаемся найти элемент
+                var element = d.FindElement(locator);
+
+                // 2. Проверяем, что он отображается и доступен для взаимодействия
+                if (element.Displayed && element.Enabled)
+                {
+                    return element; // Условие выполнено, возвращаем элемент
+                }
+
+                return null; // Элемент найден, но еще не готов (скрыт или заблокирован)
+            }
+            catch (NoSuchElementException)
+            {
+                return null; // Элемента еще нет на странице, продолжаем ждать
+            }
+            catch (StaleElementReferenceException)
+            {
+                return null; // Элемент устарел (перерисовывается DOM), продолжаем ждать
+            }
+        });
+    }
 }
