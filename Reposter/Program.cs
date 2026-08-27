@@ -946,26 +946,31 @@ internal class Program
 					}
 					try
 					{
-						WebDriverWait wait35 = new WebDriverWait(driver, TimeSpan.FromSeconds(10.0));
+						//WebDriverWait wait35 = new WebDriverWait(driver, TimeSpan.FromSeconds(10.0));
                         //Пункт меню "Поделиться в группе"
                         //css вариант - div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div
                         // XPath вариант //div[starts-with(@id, 'block_ShortcutMenu_null')]/ul/div/a[contains(text(), 'Поделиться в группе')]/div
 
-                        IWebElement shareInGroups = driver.WaitUntilClickable(By
-								.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div"));
+                        //                IWebElement shareInGroups = driver.WaitUntilClickable(By
+                        //.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div"));
 
-                        IWebElement shareInGroups2 = driver.WaitUntilClickable(By
-								.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div"));
+                        //                IWebElement shareInGroups2 = driver.WaitUntilClickable(By
+                        //.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div"));
 
-						if (shareInGroups.Text.Trim().ToLower()== "поделиться в группе")
-						{
-                            shareInGroups.Click();
+                        //if (shareInGroups.Text.Trim().ToLower() == "поделиться в группе")
+                        //{
+                        //    shareInGroups.Click();
 
-                        }
-                        else if (shareInGroups2.Text.Trim().ToLower() == "поделиться в группе")
-                        {
-                            shareInGroups2.Click();
-                        }
+                        //}
+                        //else if (shareInGroups2.Text.Trim().ToLower() == "поделиться в группе")
+                        //{
+                        //    shareInGroups2.Click();
+                        //}
+
+                        //button[data-l='t,group']
+                        IWebElement shareInGroups = driver.WaitUntilClickable(By.CssSelector("button[data-l='t,group']"));
+
+
                     }
 					catch (Exception ex11)
 					{
