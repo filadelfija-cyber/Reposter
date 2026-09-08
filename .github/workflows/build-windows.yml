@@ -2,11 +2,17 @@ name: .NET Framework 4.8 CI
 
 on:
   push:
-    branches: [ "master" ]
+      branches: [ "master" ]
+      tags:
+      - 'v*' # Trigger workflow on version tags like v1.0.0
 
 jobs:
-  build:
+  build-and-release:
     runs-on: windows-latest
+
+    # Required permissions to create a release and upload assets
+    permissions:
+      contents: write
 
     steps:
     # 1. Check out the source code
@@ -38,3 +44,17 @@ jobs:
         name: Reposter
         path: ${{ github.workspace }}\Reposter\bin\Debug\
         if-no-files-found: error
+        
+    - name: Zip Output Files
+      shell: powershell
+      run: |
+          # Compresses everything inside the Debug folder into a single zip file
+          Compress-Archive -Path "Reposter\bin\Debug\*" -DestinationPath "Reposter-Release.zip" -Force
+
+    - name: Create Release and Upload Asset
+      uses: softprops/action-gh-release@v2
+      with:
+        files: Reposter-Release.zip
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
