@@ -955,8 +955,25 @@ internal class Program
                         //Пункт меню "Поделиться в группе"
                         //css вариант - div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div
 
-                        IWebElement shareInGroups = driver.WaitUntilClickable(By.CssSelector("button[data-l='t,group']"));
-						shareInGroups.Click();
+                        IWebElement shareInGroups = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div"));
+                        IWebElement shareInGroups2 = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div"));
+
+
+                        if (shareInGroups.Text.Trim().ToLower() == "поделиться в группе")
+						{
+							shareInGroups.Click();
+						}
+
+                        if (shareInGroups2.Text.Trim().ToLower() == "поделиться в группе")
+                        {
+                            shareInGroups2.Click();
+                        }
+
+                        else
+						{
+                            shareInGroups = driver.WaitUntilClickable(By.CssSelector("button[data-l='t,group']"));
+                            shareInGroups.Click();
+                        }
 
                     }
 					catch (Exception ex11)
