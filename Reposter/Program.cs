@@ -772,7 +772,11 @@ internal class Program
 		js.ExecuteScript("const elementToRemove = document.querySelector(\"#hook_Block_TipBlock\");if (elementToRemove){elementToRemove.remove();}");
 		groupDictionary = groupDictionary.RemoveItemsByValue(groupsToRemoveFromSharing);
 		int groupNumber = 0;
-		IWebElement sermonTitleWeb = driver.Find(By.CssSelector("div.feed-list > div:nth-child(1) > div > div.feed_cnt > div.feed_b > div > div > div > div > div.video-card_n-w>a"));
+
+		var tabAll = driver.WaitUntilClickable(By.CssSelector("#tab-201"));
+		tabAll.Click();
+
+        IWebElement sermonTitleWeb = driver.Find(By.CssSelector("div.feed-list > div:nth-child(1) > div > div.feed_cnt > div.feed_b > div > div > div > div > div.video-card_n-w>a"));
 		if (sermonTitleWeb == null)
 		{
 			sermonTitleWeb = driver.Find(By.CssSelector("div > div.feed-list > div:nth-child(1) > div > div.feed_cnt > div.feed_b > div > div > div.media-block.media-text > div > div"));
