@@ -955,10 +955,15 @@ internal class Program
                         //Пункт меню "Поделиться в группе"
                         //css вариант - div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div
 
-                        IWebElement shareInGroups = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div"));
-                        IWebElement shareInGroups2 = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div"));
-
-
+                        //IWebElement shareInGroups = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div"));
+                        //IWebElement shareInGroups2 = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div"));
+						
+                        var t1=GetWebElementAsync();
+                        var t2=GetWebElementAsync();
+						var t3=GetWebElementAsync();
+						var winner = await Task.WhenAny(t1,t2,t3);
+                        var element = await winner;
+						
                         if (shareInGroups.Text.Trim().ToLower() == "поделиться в группе")
 						{
 							shareInGroups.Click();
@@ -1204,6 +1209,11 @@ internal class Program
 
 	internal static void StopPromoting()
 	{
+	}
+
+	static async Task<IWebElement> GetWebElementAsync(WebDriver driver,string cssLocator)
+    {
+        return IWebElement result = await Task.Run(() =>driver.WaitUntilClickable(cssLocator));
 	}
 
     private static DateTime GetBuildDate(Assembly assembly)
