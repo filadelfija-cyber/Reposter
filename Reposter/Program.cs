@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -388,6 +389,9 @@ internal class Program
 		if (status.ShowStatistics)
 		{
 		}
+
+		var cts = new CancellationTokenSource();
+
 		IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
 		IWebElement element = driver.FindElement(By.CssSelector("body"));
 		string attribPID = element.GetAttribute("data-l");
@@ -397,7 +401,7 @@ internal class Program
 		await driver.GoToUrl(groupsPageUrl);
 		js.ExecuteScript("const elementToRemove = document.querySelector(\"#hook_Block_PopularGroupsListBlock\");if (elementToRemove){elementToRemove.remove();}");
 		WebDriverWait wait33 = new WebDriverWait(driver, TimeSpan.FromSeconds(10.0));
-		IWebElement groupCountAsText = driver.WaitUntilClickable(By.CssSelector("span.filter_count"));
+		IWebElement groupCountAsText = driver.WaitUntilClickable(By.CssSelector("span.filter_count"),cts.Token);
 		int groupCount = int.Parse(groupCountAsText.Text);
 		while (groupNamesHash.Count != groupCount)
 		{
@@ -690,6 +694,7 @@ internal class Program
 
 	private static async Task ShareNewsInGroups(IWebDriver driver, string newsFromGroup, ProcessedAccount currentlyProcessedAccount)
 	{
+		var cts = new CancellationTokenSource();
 		if (status.IsStopping)
 		{
 			return;
@@ -706,7 +711,7 @@ internal class Program
 		await driver.GoToUrl(groupsPageUrl);
 		js.ExecuteScript("const elementToRemove = document.querySelector(\"#hook_Block_PopularGroupsListBlock\");if (elementToRemove){elementToRemove.remove();}");
 		WebDriverWait wait33 = new WebDriverWait(driver, TimeSpan.FromSeconds(10.0));
-		IWebElement groupCountAsText = driver.WaitUntilClickable(By.CssSelector("span.filter_count"));
+		IWebElement groupCountAsText = driver.WaitUntilClickable(By.CssSelector("span.filter_count"), cts.Token);
 		int groupCount = int.Parse(groupCountAsText.Text);
 		while (groupNamesHash.Count != groupCount)
 		{
@@ -773,7 +778,7 @@ internal class Program
 		groupDictionary = groupDictionary.RemoveItemsByValue(groupsToRemoveFromSharing);
 		int groupNumber = 0;
 
-		var tabAll = driver.WaitUntilClickable(By.CssSelector("#tab-201"));
+		var tabAll = driver.WaitUntilClickable(By.CssSelector("#tab-201"), cts.Token);
 		tabAll.Click();
 
         IWebElement sermonTitleWeb = driver.Find(By.CssSelector("div.feed-list > div:nth-child(1) > div > div.feed_cnt > div.feed_b > div > div > div > div > div.video-card_n-w>a"));
@@ -835,7 +840,7 @@ internal class Program
 						logger.Info((object)("\n\t<" + stat.CurrentlyProcessedAccount + "> Попытка опубликовать в группе '" + group.Value + "' ..."));
 						string shareBtnSelector = "button[aria-label=\"Поделиться\"]";
 						WebDriverWait wait34 = new WebDriverWait(driver, TimeSpan.FromSeconds(10.0));
-						IWebElement shareBtn = driver.WaitUntilClickable(By.CssSelector(shareBtnSelector));
+						IWebElement shareBtn = driver.WaitUntilClickable(By.CssSelector(shareBtnSelector), cts.Token);
 						await Task.Delay(1000);
 						if (driver.Url.Contains("anonymMain"))
 						{
@@ -846,7 +851,7 @@ internal class Program
 						{
 							logger.Info((object)("Элемент не найден: " + shareBtnSelector));
 							shareBtnSelector = "div > div.feed-list > div:nth-child(2) > div > div.feed_cnt > div.feed_f > ul > li:nth-child(2) > div > div > button";
-							shareBtn = driver.WaitUntilClickable(By.CssSelector(shareBtnSelector));
+							shareBtn = driver.WaitUntilClickable(By.CssSelector(shareBtnSelector), cts.Token);
 						}
 						shareBtn.Click();
 					}
@@ -957,31 +962,28 @@ internal class Program
 
                         //IWebElement shareInGroups = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div"));
                         //IWebElement shareInGroups2 = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div"));
-						
-                        var t1=GetWebElementAsync();
-                        var t2=GetWebElementAsync();
-						var t3=GetWebElementAsync();
+
+                        var t1 = driver.GetWebElementAsync(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div"), cts.Token);
+                        var t2 = driver.GetWebElementAsync(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div"), cts.Token);
+                        var t3 = driver.GetWebElementAsync(By.CssSelector("button[data-l='t,group']"), cts.Token);
+
 						var winner = await Task.WhenAny(t1,t2,t3);
-                        var element = await winner;
+                        var shareInGroups = await winner;
 						
-                        if (shareInGroups.Text.Trim().ToLower() == "поделиться в группе")
+                        if (shareInGroups.Text.Trim().ToLower() == "поделиться в группе" || shareInGroups.Text.Trim().ToLower() == "отправить в группу")
 						{
 							shareInGroups.Click();
 						}
 
-                        if (shareInGroups2.Text.Trim().ToLower() == "поделиться в группе")
-                        {
-                            shareInGroups2.Click();
-                        }
-
-                        else
-						{
-                            shareInGroups = driver.WaitUntilClickable(By.CssSelector("button[data-l='t,group']"));
-                            shareInGroups.Click();
-                        }
+						cts.Cancel();
 
                     }
-					catch (Exception ex11)
+                    catch (OperationCanceledException ex)
+                    {
+                        // Safely ignore cancellation exceptions because we requested it
+                        logger.Error("Unneeded tasks were successfully canceled.", ex);
+                    }
+                    catch (Exception ex11)
 					{
 						logger.Error((object)ex11);
 						continue;
@@ -1059,7 +1061,7 @@ internal class Program
 						await Task.Delay(rnd.Next(1500, 3000));
 						string sel = "#reshare > div.posting_footer.js-posting-footer.__simple.__collapsable > div > div > div > div > div.posting_f_ac > button";
 						WebDriverWait wait36 = new WebDriverWait(driver, TimeSpan.FromSeconds(10.0));
-						IWebElement publishToGroupButton = driver.WaitUntilClickable(By.CssSelector(sel));
+						IWebElement publishToGroupButton = driver.WaitUntilClickable(By.CssSelector(sel), cts.Token);
 						publishToGroupButton.Click();
 						Console.ForegroundColor = ConsoleColor.Green;
 						currentlyProcessedAccount.Groups.Add(new ProcessedGroup
@@ -1211,10 +1213,7 @@ internal class Program
 	{
 	}
 
-	static async Task<IWebElement> GetWebElementAsync(WebDriver driver,string cssLocator)
-    {
-        return IWebElement result = await Task.Run(() =>driver.WaitUntilClickable(cssLocator));
-	}
+
 
     private static DateTime GetBuildDate(Assembly assembly)
     {

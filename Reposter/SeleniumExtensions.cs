@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -9,7 +10,7 @@ using Reposter;
 
 namespace odnoklassniki_selenium;
 
-internal static class SeleniumExtensions
+public static class SeleniumExtensions
 {
 	public static IWebElement Find(this IWebDriver driver, By by, int attempts = 2, bool logError = true)
 	{
@@ -35,7 +36,8 @@ internal static class SeleniumExtensions
 
 	public static IWebElement ClickElement(this IWebDriver driver, By by, int waitSeconds = 10, int attempts = 6)
 	{
-		IWebElement webElement = null;
+        var cts = new CancellationTokenSource();
+        IWebElement webElement = null;
 		int attemptsCounter = 0;
 		while (true)
 		{
@@ -48,7 +50,7 @@ internal static class SeleniumExtensions
 				}
 				attemptsCounter++;
 				//WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(waitSeconds));
-				webElement = driver.WaitUntilClickable(by, waitSeconds);
+				webElement = driver.WaitUntilClickable(by, cts.Token, waitSeconds);
 				webElement.Click();
 			}
 			catch (Exception ex)
@@ -101,7 +103,7 @@ internal static class SeleniumExtensions
 		return dictionary.Where((KeyValuePair<TKey, TValue> kvp) => !valuesToRemove.Contains(kvp.Value)).ToDictionary((KeyValuePair<TKey, TValue> kvp) => kvp.Key, (KeyValuePair<TKey, TValue> kvp) => kvp.Value);
 	}
 
-    public static IWebElement WaitUntilClickable(this IWebDriver driver, By locator, int timeoutInSeconds = 10)
+    public static IWebElement WaitUntilClickable(this IWebDriver driver, By locator, CancellationToken token, int timeoutInSeconds = 10)
     {
         var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(timeoutInSeconds));
 
@@ -128,6 +130,11 @@ internal static class SeleniumExtensions
             {
                 return null; // Элемент устарел (перерисовывается DOM), продолжаем ждать
             }
-        });
+        }, token);
+    }
+
+    public static async Task<IWebElement> GetWebElementAsync(this IWebDriver driver, By cssLocator, CancellationToken token)
+    {
+        return await Task.Run(() => driver.WaitUntilClickable(cssLocator,token: token)).ConfigureAwait(false);
     }
 }
