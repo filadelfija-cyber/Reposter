@@ -711,7 +711,7 @@ internal class Program
 		await driver.GoToUrl(groupsPageUrl);
 		js.ExecuteScript("const elementToRemove = document.querySelector(\"#hook_Block_PopularGroupsListBlock\");if (elementToRemove){elementToRemove.remove();}");
 		WebDriverWait wait33 = new WebDriverWait(driver, TimeSpan.FromSeconds(10.0));
-		IWebElement groupCountAsText = driver.WaitUntilClickable(By.CssSelector("span.filter_count"), cts.Token);
+		IWebElement groupCountAsText = driver.WaitUntilClickable(By.CssSelector("span.filter_count"), new CancellationTokenSource().Token);
 		int groupCount = int.Parse(groupCountAsText.Text);
 		while (groupNamesHash.Count != groupCount)
 		{
@@ -778,7 +778,7 @@ internal class Program
 		groupDictionary = groupDictionary.RemoveItemsByValue(groupsToRemoveFromSharing);
 		int groupNumber = 0;
 
-		var tabAll = driver.WaitUntilClickable(By.CssSelector("#tab-201"), cts.Token);
+		var tabAll = driver.WaitUntilClickable(By.CssSelector("#tab-201"), new CancellationTokenSource().Token);
 		tabAll.Click();
 
         IWebElement sermonTitleWeb = driver.Find(By.CssSelector("div.feed-list > div:nth-child(1) > div > div.feed_cnt > div.feed_b > div > div > div > div > div.video-card_n-w>a"));
