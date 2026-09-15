@@ -694,7 +694,7 @@ internal class Program
 
 	private static async Task ShareNewsInGroups(IWebDriver driver, string newsFromGroup, ProcessedAccount currentlyProcessedAccount)
 	{
-		var cts = new CancellationTokenSource();
+		
 		if (status.IsStopping)
 		{
 			return;
@@ -805,6 +805,7 @@ internal class Program
 			currentlyProcessedAccount.TotalGroupCount = groupDictionary.Count;
 			foreach (KeyValuePair<string, string> group in groupDictionary)
 			{
+				var cts = new CancellationTokenSource();
 				if (loadedAccount != null && loadedAccount.Groups.FirstOrDefault((ProcessedGroup g) => g.Id == group.Key) != null)
 				{
 					continue;
