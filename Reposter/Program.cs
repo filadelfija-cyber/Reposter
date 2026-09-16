@@ -390,8 +390,6 @@ internal class Program
 		{
 		}
 
-		var cts = new CancellationTokenSource();
-
 		IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
 		IWebElement element = driver.FindElement(By.CssSelector("body"));
 		string attribPID = element.GetAttribute("data-l");
@@ -401,7 +399,7 @@ internal class Program
 		await driver.GoToUrl(groupsPageUrl);
 		js.ExecuteScript("const elementToRemove = document.querySelector(\"#hook_Block_PopularGroupsListBlock\");if (elementToRemove){elementToRemove.remove();}");
 		WebDriverWait wait33 = new WebDriverWait(driver, TimeSpan.FromSeconds(10.0));
-		IWebElement groupCountAsText = driver.WaitUntilClickable(By.CssSelector("span.filter_count"),cts.Token);
+		IWebElement groupCountAsText = driver.WaitUntilClickable(By.CssSelector("span.filter_count"));
 		int groupCount = int.Parse(groupCountAsText.Text);
 		while (groupNamesHash.Count != groupCount)
 		{
@@ -527,8 +525,7 @@ internal class Program
 				driver.ClickElement(By.CssSelector(".pf-head_itx_a"), 3, 2);
 				IWebElement createNewPost = driver.ClickElement(By.CssSelector(".posting_itx > div:nth-child(1)"), 3, 2);
 				await Task.Delay(2000);
-				new Actions(driver).KeyDown(Keys.Control).SendKeys("v").KeyUp(Keys.Control)
-					.Perform();
+				new Actions(driver).KeyDown(Keys.Control).SendKeys("v").KeyUp(Keys.Control).Perform();
 				await Task.Delay(9000);
 				IWebElement share = driver.ClickElement(By.CssSelector(":is(button[title='Поделиться'],button[title='На модерацию'])"), 3, 2);
 				await Task.Delay(1000);
@@ -711,7 +708,7 @@ internal class Program
 		await driver.GoToUrl(groupsPageUrl);
 		js.ExecuteScript("const elementToRemove = document.querySelector(\"#hook_Block_PopularGroupsListBlock\");if (elementToRemove){elementToRemove.remove();}");
 		WebDriverWait wait33 = new WebDriverWait(driver, TimeSpan.FromSeconds(10.0));
-		IWebElement groupCountAsText = driver.WaitUntilClickable(By.CssSelector("span.filter_count"), new CancellationTokenSource().Token);
+		IWebElement groupCountAsText = driver.WaitUntilClickable(By.CssSelector("span.filter_count"));
 		int groupCount = int.Parse(groupCountAsText.Text);
 		while (groupNamesHash.Count != groupCount)
 		{
@@ -778,7 +775,7 @@ internal class Program
 		groupDictionary = groupDictionary.RemoveItemsByValue(groupsToRemoveFromSharing);
 		int groupNumber = 0;
 
-		var tabAll = driver.WaitUntilClickable(By.CssSelector("#tab-201"), new CancellationTokenSource().Token);
+		var tabAll = driver.WaitUntilClickable(By.CssSelector("#tab-201"));
 		tabAll.Click();
 
         IWebElement sermonTitleWeb = driver.Find(By.CssSelector("div.feed-list > div:nth-child(1) > div > div.feed_cnt > div.feed_b > div > div > div > div > div.video-card_n-w>a"));
@@ -805,7 +802,6 @@ internal class Program
 			currentlyProcessedAccount.TotalGroupCount = groupDictionary.Count;
 			foreach (KeyValuePair<string, string> group in groupDictionary)
 			{
-				var cts = new CancellationTokenSource();
 				if (loadedAccount != null && loadedAccount.Groups.FirstOrDefault((ProcessedGroup g) => g.Id == group.Key) != null)
 				{
 					continue;
@@ -841,7 +837,7 @@ internal class Program
 						logger.Info((object)("\n\t<" + stat.CurrentlyProcessedAccount + "> Попытка опубликовать в группе '" + group.Value + "' ..."));
 						string shareBtnSelector = "button[aria-label=\"Поделиться\"]";
 						WebDriverWait wait34 = new WebDriverWait(driver, TimeSpan.FromSeconds(10.0));
-						IWebElement shareBtn = driver.WaitUntilClickable(By.CssSelector(shareBtnSelector), cts.Token);
+						IWebElement shareBtn = driver.WaitUntilClickable(By.CssSelector(shareBtnSelector));
 						await Task.Delay(1000);
 						if (driver.Url.Contains("anonymMain"))
 						{
@@ -852,7 +848,7 @@ internal class Program
 						{
 							logger.Info((object)("Элемент не найден: " + shareBtnSelector));
 							shareBtnSelector = "div > div.feed-list > div:nth-child(2) > div > div.feed_cnt > div.feed_f > ul > li:nth-child(2) > div > div > button";
-							shareBtn = driver.WaitUntilClickable(By.CssSelector(shareBtnSelector), cts.Token);
+							shareBtn = driver.WaitUntilClickable(By.CssSelector(shareBtnSelector));
 						}
 						shareBtn.Click();
 					}
@@ -958,35 +954,44 @@ internal class Program
 					}
 					try
 					{
-                        //Пункт меню "Поделиться в группе"
-                        //css вариант - div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div
 
-                        //IWebElement shareInGroups = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div"));
-                        //IWebElement shareInGroups2 = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div"));
+						//Пункт меню "Поделиться в группе"
+						//css вариант - div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div
 
-                        var t1 = driver.GetWebElementAsync(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div"), cts.Token);
-                        var t2 = driver.GetWebElementAsync(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div"), cts.Token);
-                        var t3 = driver.GetWebElementAsync(By.CssSelector("button[data-l='t,group']"), cts.Token);
+						//IWebElement shareInGroups = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div"));
+						//IWebElement shareInGroups2 = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div"));
 
-						var winner = await Task.WhenAny(t1,t2,t3);
-                        var shareInGroups = await winner;
-						
-                        if (shareInGroups.Text.Trim().ToLower() == "поделиться в группе" || shareInGroups.Text.Trim().ToLower() == "отправить в группу")
+						//css selector for all elements in list
+						string allElements = "div[id^=\"block_ShortcutMenu_null\"] > ul > div > a > div";
+
+						string cssSelectorAny = ":is(div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div," +
+                            "div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div," +
+                            ",button[data-l='t,group'])";
+
+						var elements = driver.FindElements(By.CssSelector(allElements));
+						if (elements != null && elements.Count > 0)
 						{
-							shareInGroups.Click();
+							foreach (var el in elements)
+							{
+								if (el.Text.ToLower() == "поделиться в группе")
+								{
+                                    el.Click();
+                                }
+                            }
 						}
+						else
+						{
+                            IWebElement shareInGroups = driver.WaitUntilClickable(By.CssSelector("button[data-l='t,group']"));
 
-						cts.Cancel();
-
+                            if (shareInGroups.Text.Trim().ToLower() == "отправить в группу")
+                            {
+                                shareInGroups.Click();
+                            }
+                        }
                     }
-                    catch (OperationCanceledException ex)
-                    {
-                        // Safely ignore cancellation exceptions because we requested it
-                        logger.Error("Unneeded tasks were successfully canceled.", ex);
-                    }
-                    catch (Exception ex11)
+                    catch (Exception ex)
 					{
-						logger.Error((object)ex11);
+						logger.Error(ex);
 						continue;
 					}
 					while (true)
@@ -1000,23 +1005,21 @@ internal class Program
 							shareBtn2.SendKeys(" ");
 							shareBtn2.SendKeys(Keys.Backspace);
 						}
-						catch (JavaScriptException ex12)
+						catch (JavaScriptException ex)
 						{
-							JavaScriptException ex13 = ex12;
-							logger.Error((object)ex13);
+							logger.Error(ex);
 							currentlyProcessedAccount.FaultyGroups.Add(new ProcessedGroup
 							{
 								Id = group.Key,
 								Name = group.Value,
 								ProcessedDate = DateTime.Now,
-								Message = ex13.Message
+								Message = ex.Message
 							});
 							break;
 						}
 						catch (Exception ex)
 						{
-							Exception ex14 = ex;
-							logger.Error((object)ex14);
+							logger.Error(ex);
 							continue;
 						}
 						await Task.Delay(rnd.Next(1500, 3000));
@@ -1062,24 +1065,41 @@ internal class Program
 						await Task.Delay(rnd.Next(1500, 3000));
 						string sel = "#reshare > div.posting_footer.js-posting-footer.__simple.__collapsable > div > div > div > div > div.posting_f_ac > button";
 						WebDriverWait wait36 = new WebDriverWait(driver, TimeSpan.FromSeconds(10.0));
-						IWebElement publishToGroupButton = driver.WaitUntilClickable(By.CssSelector(sel), cts.Token);
+						IWebElement publishToGroupButton = driver.WaitUntilClickable(By.CssSelector(sel));
 						publishToGroupButton.Click();
-						Console.ForegroundColor = ConsoleColor.Green;
-						currentlyProcessedAccount.Groups.Add(new ProcessedGroup
+                        IWebElement isErrorHappened = driver.Find(By.CssSelector("div[class='posting_e js-submit-error']"));
+
+                        if (isErrorHappened == null)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            logger.Info((object)$"Успешно опубликовано в группе '{group.Value}' (https://ok.ru/group/{group.Key}). {currentlyProcessedAccount.Groups.Count}/{currentlyProcessedAccount.TotalGroupCount}");
+                            Console.ResetColor();
+                            currentlyProcessedAccount.Groups.Add(new ProcessedGroup
+                            {
+                                Id = group.Key,
+                                Name = group.Value,
+                                ProcessedDate = DateTime.Now
+                            });
+                            if (!status.IsStarted || !status.ShowStatistics)
+                            {
+                            }
+                        }
+						else
 						{
-							Id = group.Key,
-							Name = group.Value,
-							ProcessedDate = DateTime.Now
-						});
-						logger.Info((object)("\tУспешно опубликовано в группе (https://ok.ru/group/" + group.Key + ")!"));
-						if (status.IsStarted && status.ShowStatistics)
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            logger.Error((object)("Проблемы при публикации в группе '" + group.Value + "' (https://ok.ru/group/" + group.Key + ")"));
+                            Console.ResetColor();
+                            if (!status.IsStarted || !status.ShowStatistics)
+                            {
+                            }
+                        }
+                        if (status.IsStarted && status.ShowStatistics)
 						{
 						}
 						if (status.IsStopping)
 						{
 							goto end_IL_1899;
 						}
-						Console.ResetColor();
 						processedGroups.Add(group.Value);
 						js.ExecuteScript("const elementToRemove = document.querySelector(\"#hook_Block_TipBlock\");if (elementToRemove){elementToRemove.remove();}");
 						break;
