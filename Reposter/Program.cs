@@ -136,7 +136,15 @@ internal class Program
 		{
 			try
 			{
-				driver = new ChromeDriver(options);
+                Environment.SetEnvironmentVariable("SE_OFFLINE", "true");
+                Environment.SetEnvironmentVariable("SE_DEBUG", "false");
+				var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                Console.WriteLine($"{dir}\\chromedriver.exe");
+                var service = ChromeDriverService.CreateDefaultService($"{Assembly.GetExecutingAssembly().Location}\\chromedriver.exe");//replace to x64 version
+				service.EnableVerboseLogging = false;
+				service.LogLevel = OpenQA.Selenium.Chromium.ChromiumDriverLogLevel.Severe;
+				options.BrowserVersion="153.0.8010.52";
+                driver = new ChromeDriver(service, options);
 			}
 			catch (Exception ex)
 			{
@@ -968,20 +976,28 @@ internal class Program
                             "div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div," +
                             ",button[data-l='t,group'])";
 
-						var elements = driver.FindElements(By.CssSelector(allElements));
+                        var xpathTry = driver.FindElements(By.XPath(".//div[starts-with(@id,\"block_ShortcutMenu_null\")]/ul/div/a[contains(normalize-space(text()), 'Поделиться в группе')]/div"));
+
+
+                        var elements = driver.FindElements(By.CssSelector(cssSelectorAny));
 						if (elements != null && elements.Count > 0)
 						{
 							foreach (var el in elements)
 							{
-								if (el.Text.ToLower() == "поделиться в группе")
+                                logger.Info($"web element: {el.Text}");
+
+                                if (el.Text.Trim().ToLower() == "поделиться в группе" || el.Text.Trim().ToLower() == "отправить в группу")
 								{
                                     el.Click();
+                                    break;
                                 }
                             }
 						}
 						else
 						{
                             IWebElement shareInGroups = driver.WaitUntilClickable(By.CssSelector("button[data-l='t,group']"));
+
+                            logger.Info($"web element: {shareInGroups.Text}");
 
                             if (shareInGroups.Text.Trim().ToLower() == "отправить в группу")
                             {
