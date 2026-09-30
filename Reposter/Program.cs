@@ -1014,25 +1014,6 @@ internal class Program
 								logger.Info("Кнопка 'Отправить в группу' не найдена по css селектору:'button[data-l='t,group']");						
 							}
 						}
-
-                        var elements = driver.FindElements(By.CssSelector(cssSelectorAny));
-						if (elements != null && elements.Count > 0)
-						{
-							foreach (var el in elements)
-							{
-                                logger.Info($"web element: {el.Text}");
-
-                                if (el.Text.Trim().ToLower() == "поделиться в группе" || el.Text.Trim().ToLower() == "отправить в группу")
-								{
-                                    el.Click();
-                                    break;
-                                }
-                            }
-						}
-						else
-						{
-
-                        }
                     }
                     catch (Exception ex)
 					{
