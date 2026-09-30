@@ -966,18 +966,54 @@ internal class Program
 						//Пункт меню "Поделиться в группе"
 						//css вариант - div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div
 
-						//IWebElement shareInGroups = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div"));
-						//IWebElement shareInGroups2 = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div"));
-
+						IWebElement shareInGroups = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div"));
+						IWebElement shareInGroups2 = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div"));
+                        logger.Info($"web element found: {shareInGroups.Text}");
+                        logger.Info($"web element found: {shareInGroups2.Text}");
+						
 						//css selector for all elements in list
-						string allElements = "div[id^=\"block_ShortcutMenu_null\"] > ul > div > a > div";
+						//string allElements = "div[id^=\"block_ShortcutMenu_null\"] > ul > div > a > div";
 
-						string cssSelectorAny = ":is(div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div," +
-                            "div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div," +
-                            ",button[data-l='t,group'])";
+						//string cssSelectorAny = ":is(div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div," +
+                        //    "div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div," +
+                        //    ",button[data-l='t,group'])";
 
-                        var xpathTry = driver.FindElements(By.XPath(".//div[starts-with(@id,\"block_ShortcutMenu_null\")]/ul/div/a[contains(normalize-space(text()), 'Поделиться в группе')]/div"));
+                        //var xpathTry = driver.FindElements(By.XPath(".//div[starts-with(@id,\"block_ShortcutMenu_null\")]/ul/div/a[contains(normalize-space(text()), 'Поделиться в группе')]/div"));
+						bool shared = false;
+						if(shareInGroups.Text.Trim().ToLower() == "поделиться в группе")
+						{
+							shareInGroups.Click();
+							shared = true;
+						}
+						else
+						{
+							logger.Info("Кнопка 'Поделиться в группе' не найдена по css селектору:'div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div'");
+						}
 
+						
+						if(shareInGroups2.Text.Trim().ToLower() == "поделиться в группе" && !shared)
+						{
+							shareInGroups2.Click();
+							shared = true;
+						}
+						else
+						{
+							logger.Info("Кнопка 'Поделиться в группе' не найдена по css селектору:'div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div'");
+						}
+
+						if(!shared)
+						{
+							shareInGroups = driver.WaitUntilClickable(By.CssSelector("button[data-l='t,group']"));
+                            logger.Info($"web element found: {shareInGroups.Text}");
+                            if (shareInGroups.Text.Trim().ToLower() == "отправить в группу")
+                            {
+                                shareInGroups.Click();
+                            }
+							else
+							{
+								logger.Info("Кнопка 'Отправить в группу' не найдена по css селектору:'button[data-l='t,group']");						
+							}
+						}
 
                         var elements = driver.FindElements(By.CssSelector(cssSelectorAny));
 						if (elements != null && elements.Count > 0)
@@ -995,14 +1031,7 @@ internal class Program
 						}
 						else
 						{
-                            IWebElement shareInGroups = driver.WaitUntilClickable(By.CssSelector("button[data-l='t,group']"));
 
-                            logger.Info($"web element: {shareInGroups.Text}");
-
-                            if (shareInGroups.Text.Trim().ToLower() == "отправить в группу")
-                            {
-                                shareInGroups.Click();
-                            }
                         }
                     }
                     catch (Exception ex)
