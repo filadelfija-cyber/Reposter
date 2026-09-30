@@ -136,15 +136,15 @@ internal class Program
 		{
 			try
 			{
-                Environment.SetEnvironmentVariable("SE_OFFLINE", "true");
-                Environment.SetEnvironmentVariable("SE_DEBUG", "false");
-				var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                Console.WriteLine($"{dir}\\chromedriver.exe");
-                var service = ChromeDriverService.CreateDefaultService($"{Assembly.GetExecutingAssembly().Location}\\chromedriver.exe");//replace to x64 version
-				service.EnableVerboseLogging = false;
-				service.LogLevel = OpenQA.Selenium.Chromium.ChromiumDriverLogLevel.Severe;
-				options.BrowserVersion="153.0.8010.52";
-                driver = new ChromeDriver(service, options);
+                //Environment.SetEnvironmentVariable("SE_OFFLINE", "true");
+                //Environment.SetEnvironmentVariable("SE_DEBUG", "false");
+				//var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                //Console.WriteLine($"{dir}\\chromedriver.exe");
+                //var service = ChromeDriverService.CreateDefaultService($"{Assembly.GetExecutingAssembly().Location}\\chromedriver.exe");//replace to x64 version
+				//service.EnableVerboseLogging = false;
+				//service.LogLevel = OpenQA.Selenium.Chromium.ChromiumDriverLogLevel.Severe;
+				//options.BrowserVersion="153.0.8010.52";
+                driver = new ChromeDriver(options);//service
 			}
 			catch (Exception ex)
 			{
