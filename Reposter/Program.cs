@@ -78,6 +78,12 @@ internal class Program
         logger.Info((object)$"Версия программы: {Assembly.GetExecutingAssembly().GetName().Version}");
         logger.Info((object)$"Дата сборки: {buildDate:yyyy-MM-dd HH:mm:ss} UTC");
         logger.Info((object)$"Программа начала свою работу. {DateTime.Now}");
+
+		logger.Info("Для работы программы нужна установленная в системе версия хрома и хромдрайвера: \"154.0.8037.92\"");
+		logger.Info("https://storage.googleapis.com/chrome-for-testing-public/154.0.8037.92/win64/chrome-win64.zip\r\nhttps://storage.googleapis.com/chrome-for-testing-public/154.0.8037.92/win64/chromedriver-win64.zip");
+		logger.Info("Распаковать в \r\nC:\\Users\\<username>\\.cache\\selenium\\chromedriver\\win64\\154.0.8037.92" +
+                                "\r\nC:\\Users\\<username>\\.cache\\selenium\\chrome\\win64\\154.0.8037.92");
+
 		if (status.IsStarted && status.ShowStatistics)
 		{
 		}
@@ -136,15 +142,17 @@ internal class Program
 		{
 			try
 			{
-                //Environment.SetEnvironmentVariable("SE_OFFLINE", "true");
+                Environment.SetEnvironmentVariable("SE_OFFLINE", "true");
                 //Environment.SetEnvironmentVariable("SE_DEBUG", "false");
 				//var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 //Console.WriteLine($"{dir}\\chromedriver.exe");
                 //var service = ChromeDriverService.CreateDefaultService($"{Assembly.GetExecutingAssembly().Location}\\chromedriver.exe");//replace to x64 version
-				//service.EnableVerboseLogging = false;
-				//service.LogLevel = OpenQA.Selenium.Chromium.ChromiumDriverLogLevel.Severe;
-				//options.BrowserVersion="157.0.8079.0";
-                driver = new ChromeDriver(options);//service
+				var service = ChromeDriverService.CreateDefaultService();
+
+                service.EnableVerboseLogging = false;
+				service.LogLevel = OpenQA.Selenium.Chromium.ChromiumDriverLogLevel.Severe;
+				options.BrowserVersion= "154.0.8037.92";
+                driver = new ChromeDriver(service,options);//service
 			}
 			catch (Exception ex)
 			{
