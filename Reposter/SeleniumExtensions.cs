@@ -106,30 +106,45 @@ public static class SeleniumExtensions
     {
         var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(timeoutInSeconds));
 
-        return wait.Until(d =>
-        {
-            try
+		try
+		{
+            return wait.Until(d =>
             {
-                // 1. Пытаемся найти элемент
-                var element = d.FindElement(locator);
-
-                // 2. Проверяем, что он отображается и доступен для взаимодействия
-                if (element.Displayed && element.Enabled)
+                try
                 {
-                    return element; // Условие выполнено, возвращаем элемент
-                }
+                    // 1. Пытаемся найти элемент
+                    var element = d.FindElement(locator);
 
-                return null; // Элемент найден, но еще не готов (скрыт или заблокирован)
-            }
-            catch (NoSuchElementException)
-            {
-                return null; // Элемента еще нет на странице, продолжаем ждать
-            }
-            catch (StaleElementReferenceException)
-            {
-                return null; // Элемент устарел (перерисовывается DOM), продолжаем ждать
-            }
-        });
+                    // 2. Проверяем, что он отображается и доступен для взаимодействия
+                    if (element.Displayed && element.Enabled)
+                    {
+                        return element; // Условие выполнено, возвращаем элемент
+                    }
+
+                    return null; // Элемент найден, но еще не готов (скрыт или заблокирован)
+                }
+                catch (NoSuchElementException ex)
+                {
+                    Program.logger.Error((ex.Message + "\n" + Program.HandleStackTraceString(ex.StackTrace)));
+                    return null; // Элемента еще нет на странице, продолжаем ждать
+                }
+                catch (StaleElementReferenceException ex)
+                {
+                    Program.logger.Error((ex.Message + "\n" + Program.HandleStackTraceString(ex.StackTrace)));
+                    return null; // Элемент устарел (перерисовывается DOM), продолжаем ждать
+                }
+                catch (Exception ex)
+                {
+                    Program.logger.Error((ex.Message + "\n" + Program.HandleStackTraceString(ex.StackTrace)));
+                    return null;
+                }
+            });
+        }
+		catch (Exception ex)
+		{
+            Program.logger.Error((ex.Message + "\n" + Program.HandleStackTraceString(ex.StackTrace)));
+            return null;
+		}
     }
 
     public static async Task<IWebElement> GetWebElementAsync(this IWebDriver driver, By cssLocator)

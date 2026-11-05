@@ -715,15 +715,17 @@ internal class Program
 		if (status.ShowStatistics)
 		{
 		}
-		IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+        await Task.Delay(3000);
+
+        IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
 		string pid = driver.FindElement(By.CssSelector("body")).GetAttribute("data-l").Split(',')
 			.ToList()
 			.Last();
-		logger.Info((object)("Profile ID:" + pid));
+		logger.Info("Profile ID:" + pid);
 		string groupsPageUrl = "https://ok.ru/profile/" + pid + "/groups/mine";
 		await driver.GoToUrl(groupsPageUrl);
 		js.ExecuteScript("const elementToRemove = document.querySelector(\"#hook_Block_PopularGroupsListBlock\");if (elementToRemove){elementToRemove.remove();}");
-		WebDriverWait wait33 = new WebDriverWait(driver, TimeSpan.FromSeconds(10.0));
+		//WebDriverWait wait33 = new WebDriverWait(driver, TimeSpan.FromSeconds(10.0));
 		IWebElement groupCountAsText = driver.WaitUntilClickable(By.CssSelector("span.filter_count"));
 		int groupCount = int.Parse(groupCountAsText.Text);
 		while (groupNamesHash.Count != groupCount)
@@ -793,7 +795,7 @@ internal class Program
 
 		var tabAll = driver.WaitUntilClickable(By.CssSelector("#tab-201"));
 		tabAll.Click();
-
+		await Task.Delay(1500);
         IWebElement sermonTitleWeb = driver.Find(By.CssSelector("div.feed-list > div:nth-child(1) > div > div.feed_cnt > div.feed_b > div > div > div > div > div.video-card_n-w>a"));
 		if (sermonTitleWeb == null)
 		{
@@ -827,6 +829,8 @@ internal class Program
 				stat.CurrentlyProcessedGroup = group;
 				Console.ForegroundColor = ConsoleColor.Yellow;
 				logger.Info((object)$"{groupNumber}/{groupDictionary.Count} '{group.Value}'");
+				bool sharePressed = false;
+				bool useBtnOnPopupModularWindow = true;//первым искать кнопку на модульном окне
 				while (true)
 				{
 					Console.ResetColor();
@@ -850,23 +854,33 @@ internal class Program
 					}
 					try
 					{
-						logger.Info((object)("\n\t<" + stat.CurrentlyProcessedAccount + "> Попытка опубликовать в группе '" + group.Value + "' ..."));
-						string shareBtnSelector = "button[aria-label=\"Поделиться\"]";
-						WebDriverWait wait34 = new WebDriverWait(driver, TimeSpan.FromSeconds(10.0));
-						IWebElement shareBtn = driver.WaitUntilClickable(By.CssSelector(shareBtnSelector));
-						await Task.Delay(1000);
-						if (driver.Url.Contains("anonymMain"))
+						logger.Info("\n\t<" + stat.CurrentlyProcessedAccount + "> Попытка опубликовать в группе '" + group.Value + "' ...");
+
+						if (!sharePressed)
 						{
-							logger.Info((object)"Выбило из аккаунта. Переход к следующему аккаунту.");
-							break;
-						}
-						if (shareBtn == null)
-						{
-							logger.Info((object)("Элемент не найден: " + shareBtnSelector));
-							shareBtnSelector = "div > div.feed-list > div:nth-child(2) > div > div.feed_cnt > div.feed_f > ul > li:nth-child(2) > div > div > button";
-							shareBtn = driver.WaitUntilClickable(By.CssSelector(shareBtnSelector));
-						}
-						shareBtn.Click();
+                            string shareBtnSelector = "div > div.feed-list > div:nth-child(1) > div > div > bdui-component > div > div > div:nth-child(6) > div:nth-child(2) > div > div > div > div > button > div > span";
+
+                            //IWebElement shareBtn = (IWebElement)js.ExecuteScript("const topmost = Array.from(document.querySelectorAll('button[aria-label=\"Поделиться\"]')).reduce((best, el) => {const top = el.getBoundingClientRect().top;return best === null || top < best.top ? { el, top } : best;}, null)?.el;");
+
+                            IWebElement shareBtn = driver.Find(By.CssSelector(shareBtnSelector));
+
+                            if (driver.Url.Contains("anonymMain"))
+                            {
+                                logger.Info("Выбило из аккаунта. Переход к следующему аккаунту.");
+                                break;
+                            }
+                            if (shareBtn == null)
+                            {
+                                logger.Info("Кнопка 'Поделиться' не найдена. Альтернативный поиск...");
+                                IWebElement topmost = FindTopMostShareButton(driver);
+                                //shareBtnSelector = "div > div.feed-list > div:nth-child(2) > div > div.feed_cnt > div.feed_f > ul > li:nth-child(2) > div > div > button";
+                                //shareBtn = driver.WaitUntilClickable(By.CssSelector(shareBtnSelector));
+                                shareBtn = topmost;
+                            }
+                            shareBtn.Click();
+							logger.Info("Нажата кнопка 'Поделиться'");
+							sharePressed = true;
+                        }
 					}
 					catch (ElementClickInterceptedException ex3)
 					{
@@ -970,71 +984,121 @@ internal class Program
 					}
 					try
 					{
-
+						IWebElement shareInGroups = null;
+						IWebElement shareInGroups2 = null;
+                        bool shared = false;
 						//Пункт меню "Поделиться в группе"
-						//css вариант - div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div
-
-						IWebElement shareInGroups = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div"));
-						IWebElement shareInGroups2 = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div"));
-                        logger.Info($"web element found: {shareInGroups.Text}");
-                        logger.Info($"web element found: {shareInGroups2.Text}");
-						
-						//css selector for all elements in list
-						//string allElements = "div[id^=\"block_ShortcutMenu_null\"] > ul > div > a > div";
-
-						//string cssSelectorAny = ":is(div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div," +
-                        //    "div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div," +
-                        //    ",button[data-l='t,group'])";
-
-                        //var xpathTry = driver.FindElements(By.XPath(".//div[starts-with(@id,\"block_ShortcutMenu_null\")]/ul/div/a[contains(normalize-space(text()), 'Поделиться в группе')]/div"));
-						bool shared = false;
-						if(shareInGroups.Text.Trim().ToLower() == "поделиться в группе")
+						//#reshare > div.posting_h > div.portlet_h > h3
+						var modular = driver.Find(By.CssSelector("#reshare > div.posting_h > div.portlet_h > h3"),1,true);
+						if (modular != null)
 						{
-							shareInGroups.Click();
-							shared = true;
-						}
-						else
-						{
-							logger.Info("Кнопка 'Поделиться в группе' не найдена по css селектору:'div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div'");
+							logger.Info("Обнаружено модальное окно. Закрываем...");
+							driver.ClickElement(By.CssSelector("#hook_Block_PopLayerOver > div > div.modal-new_hld > div.modal-new_close > span"));
+                            logger.Info("Модальное окно закрыто");
+
+                            await Task.Delay(1500);
 						}
 
-						
-						if(shareInGroups2.Text.Trim().ToLower() == "поделиться в группе" && !shared)
+						if (useBtnOnPopupModularWindow)//по умолчанию истина
 						{
-							shareInGroups2.Click();
-							shared = true;
-						}
-						else
-						{
-							logger.Info("Кнопка 'Поделиться в группе' не найдена по css селектору:'div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div'");
-						}
-
-						if(!shared)
-						{
-							shareInGroups = driver.WaitUntilClickable(By.CssSelector("button[data-l='t,group']"));
-                            logger.Info($"web element found: {shareInGroups.Text}");
-                            if (shareInGroups.Text.Trim().ToLower() == "отправить в группу")
-                            {
-                                shareInGroups.Click();
-                            }
-							else
+                            shareInGroups = driver.WaitUntilClickable(By.CssSelector("button[data-l='t,group']"), 10);
+							if (shareInGroups != null)
 							{
-								logger.Info("Кнопка 'Отправить в группу' не найдена по css селектору:'button[data-l='t,group']");						
-							}
-						}
+                                logger.Info($"web element found: {shareInGroups.Text}");
+                                if (shareInGroups.Text.Trim().ToLower() == "отправить в группу")
+                                {
+                                    shareInGroups.Click();
+									shared = true;
+                                }
+                                else
+                                {
+                                    logger.Info("Кнопка 'Отправить в группу' не найдена по css селектору:'button[data-l='t,group']");
+                                }
+                            }
+                        }
+
+						if (!shared)
+						{
+                            string shareBtnSelector = "div > div.feed-list > div:nth-child(1) > div > div > bdui-component > div > div > div:nth-child(6) > div:nth-child(2) > div > div > div > div > button > div > span";
+
+                            IWebElement shareBtn = driver.Find(By.CssSelector(shareBtnSelector));
+							shareBtn.Click();
+                            //IWebElement topmostShareButton = FindTopMostShareButton(driver);
+                            //topmostShareButton.Click();
+                            logger.Info("Нажата кнопка 'поделиться'");
+                            shareInGroups = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div"), 30);
+
+                            if (shareInGroups == null)
+                            {
+                                logger.Info("7 элемент списка не найден. Пропуск поиска 6-ого. Поиск альтернативы по css селектору button[data-l='t,group']");
+                            }
+                            else
+                            {
+                                logger.Info($"web element found: {shareInGroups.Text}");
+
+                                shareInGroups2 = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div"));
+                                logger.Info($"web element found: {shareInGroups2.Text}");
+
+                                if (shareInGroups.Text.Trim().ToLower() == "поделиться в группе")
+                                {
+                                    shareInGroups.Click();
+                                    shared = true;
+                                }
+                                else
+                                {
+                                    logger.Info("Кнопка 'Поделиться в группе' не найдена по css селектору:'div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(6) > div'");
+                                }
+
+                                if (shareInGroups2.Text.Trim().ToLower() == "поделиться в группе" && !shared)
+                                {
+                                    shareInGroups2.Click();
+                                    shared = true;
+                                }
+                                else
+                                {
+                                    logger.Info("Кнопка 'Поделиться в группе' не найдена по css селектору:'div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div'");
+                                }
+                            }
+                        }
                     }
                     catch (Exception ex)
 					{
 						logger.Error(ex);
 						continue;
 					}
-					while (true)
+					while (true)//цикл опубликовки в группы(модальное окно)
 					{
 						await Task.Delay(rnd.Next(1500, 3000));
 						try
 						{
-                            IWebElement shareBtn2 = driver.ClickElement(By.CssSelector("#reshare_XpostGroupNameInput"));//
-                            js.ExecuteScript("const element = document.querySelector(\"#reshare_XpostGroupNameInput\");if (element){element.value = '" + group.Value.Trim() + "';}");
+							string cssSelector = null;
+							IWebElement shareBtn2 = null;
+
+                            //var modular = driver.Find(By.CssSelector("#reshare > div.posting_h > div.portlet_h > h3"), 1, true);
+                            //if (modular != null)
+                            //{
+                            //    logger.Info("Обнаружено модальное окно. Закрываем...");
+                            //    driver.ClickElement(By.CssSelector("#hook_Block_PopLayerOver > div > div.modal-new_hld > div.modal-new_close > span"));
+                            //    logger.Info("Модальное окно закрыто");
+
+                            //    await Task.Delay(1500);
+                            //}
+
+                            shareBtn2 = driver.ClickElement(By.CssSelector(":is(#reshare_XpostGroupNameInput,input[id=':reshare-blockr0:'])")); //not interactible error...hmmm
+							if (shareBtn2.GetDomProperty("id") == ":reshare-blockr0:")
+							{
+								logger.Info("css selector is ':reshare-blockr0:'");
+								cssSelector = ":reshare-blockr0:";
+                            }
+							else
+							{
+                                logger.Info("css selector is '#reshare_XpostGroupNameInput'");
+                                cssSelector = "#reshare_XpostGroupNameInput";
+                            }
+                            //shareBtn2 = (IWebElement)js.ExecuteScript("return document.querySelector('{cssSelector}']');");
+                            //js.ExecuteScript($"document.querySelector('{cssSelector}').click();");//click
+
+                            js.ExecuteScript($"const element = document.querySelector(\""+cssSelector+"\");if (element){element.value = '" + group.Value.Trim() + "';}");
                             await Task.Delay(rnd.Next(500, 1000));
 							shareBtn2.SendKeys(" ");
 							shareBtn2.SendKeys(Keys.Backspace);
@@ -1057,7 +1121,7 @@ internal class Program
 							continue;
 						}
 						await Task.Delay(rnd.Next(1500, 3000));
-						while (true)
+						while (true)// цикл попыток выбора из списка предложений(групп)
 						{
 							List<IWebElement> groupListTest = driver.FindElements(By.CssSelector("#reshare_XpostGroupSuggestItems > li")).ToList();
 							if (!groupListTest.Any())
@@ -1082,23 +1146,49 @@ internal class Program
 									}
 								}
 							}
-							catch (StaleElementReferenceException ex5)
+							catch (StaleElementReferenceException ex)
 							{
-								StaleElementReferenceException ex15 = ex5;
-								logger.Error((object)ex15);
+								logger.Error((object)ex);
 								continue;
 							}
-							catch (ElementNotInteractableException ex16)
+							catch (ElementNotInteractableException ex)
 							{
-								ElementNotInteractableException ex17 = ex16;
-								logger.Error((object)ex17);
-								continue;
+                                IWebElement errMessagePopUp = driver.Find(By.CssSelector("div[class='posting_e js-submit-error']"));
+                                if (errMessagePopUp != null)
+								{
+                                    ReadOnlyCollection<IWebElement> twoSpans = errMessagePopUp.FindElements(By.TagName("span"));
+                                    logger.Error((object)("Сообщение об ошибке:'" + twoSpans[0].Text + "'"));
+                                    currentlyProcessedAccount.FaultyGroups.Add(new ProcessedGroup
+                                    {
+                                        Id = group.Key,
+                                        Name = group.Value,
+                                        ProcessedDate = DateTime.Now,
+                                        Message = twoSpans[0].Text
+                                    });
+                                    if (twoSpans[0].Text == "Пожалуйста, укажите группу")
+                                    {
+                                        logger.Info("Не найдена группа для рассылки. Переход к следующей...");
+                                        try
+                                        {
+                                            js.ExecuteScript("const elementToRemove = document.querySelector(\"#hook_Block_TipBlock\");if (elementToRemove){elementToRemove.remove();}");
+                                        }
+                                        catch (Exception ex2)
+                                        {
+                                            logger.Error(ex2);
+                                        }
+                                        await Task.Delay(2000);
+                                    }
+									break;//выходим из цикла попыток опубликовки
+                                }
+
+                                logger.Error(ex);
+								break; //?
 							}
-							break;
+							logger.Info("Продолжаем пытаться выбрать из списка групп...");
+							continue; //continue?
 						}
 						await Task.Delay(rnd.Next(1500, 3000));
 						string sel = "#reshare > div.posting_footer.js-posting-footer.__simple.__collapsable > div > div > div > div > div.posting_f_ac > button";
-						WebDriverWait wait36 = new WebDriverWait(driver, TimeSpan.FromSeconds(10.0));
 						IWebElement publishToGroupButton = driver.WaitUntilClickable(By.CssSelector(sel));
 						publishToGroupButton.Click();
                         IWebElement isErrorHappened = driver.Find(By.CssSelector("div[class='posting_e js-submit-error']"));
@@ -1152,7 +1242,44 @@ internal class Program
 		groupDictionary.Clear();
 	}
 
-	private static void SaveIntermediateResultOnDisk()
+    private static IWebElement FindTopMostShareButton(IWebDriver driver)
+    {
+        string shareBtnSelectorVariant1 = "button[aria-label='Поделиться']";
+        string shareBtnSelectorVariant2 = "button > div > span > svg > path[d*='M7.165 4.656C3.47 5.388 1.593 7.801.69']";
+		string shareBtnSelector = shareBtnSelectorVariant2;
+
+        IWebElement topmost = null;
+		ReadOnlyCollection<IWebElement> buttons = null;
+		int attempts = 3;
+		int attemptCount = 0;
+		while (topmost == null)
+		{
+			attemptCount++;
+            if (attemptCount == 3)
+            {
+				shareBtnSelector = shareBtnSelectorVariant1;
+            }
+            buttons = driver.FindElements(By.CssSelector(shareBtnSelector));
+
+			if (buttons != null && buttons.Count!=0)
+			{
+                topmost = buttons[0];
+				break;
+            }
+        }
+
+        foreach (var b in buttons)
+        {
+            if (b.Location.Y < topmost.Location.Y)
+            {
+                topmost = b;
+            }
+        }
+
+        return topmost;
+    }
+
+    private static void SaveIntermediateResultOnDisk()
 	{
 		string interContent = JsonConvert.SerializeObject((object)stat);
 		File.WriteAllText(Path.Combine(AssemblyDirectory(), "save.json"), interContent);
