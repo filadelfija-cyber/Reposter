@@ -27,7 +27,7 @@ public static class SeleniumExtensions
 			{
 				if (logError)
 				{
-					Program.logger.Error((object)(by.Criteria + "\n" + ex.Message + "\n" + Program.HandleStackTraceString(ex.StackTrace)));
+					Program.logger.Error((by.Criteria + "\n" + Program.HandleSeleniumErrorMessage(ex.Message) + "\n" + Program.HandleStackTraceString(ex.StackTrace)));
 				}
 			}
 		}
@@ -54,10 +54,10 @@ public static class SeleniumExtensions
 			}
 			catch (Exception ex)
 			{
-				Program.logger.Error((object)(by.Criteria + "\n" + ex.Message + "\n" + Program.HandleStackTraceString(ex.StackTrace)));
+				Program.logger.Error((by.Criteria + "\n" + Program.HandleSeleniumErrorMessage(ex.Message) + "\n" + Program.HandleStackTraceString(ex.StackTrace)));
 				if (ex.InnerException != null)
 				{
-					Program.logger.Error((object)("\n" + ex.InnerException.Message + "\n" + Program.HandleStackTraceString(ex.InnerException.StackTrace)));
+					Program.logger.Error(("\n" + ex.InnerException.Message + "\n" + Program.HandleStackTraceString(ex.InnerException.StackTrace)));
 				}
 				if (attemptsCounter < attempts)
 				{
@@ -125,24 +125,24 @@ public static class SeleniumExtensions
                 }
                 catch (NoSuchElementException ex)
                 {
-                    Program.logger.Error((ex.Message + "\n" + Program.HandleStackTraceString(ex.StackTrace)));
+                    Program.logger.Error(Program.HandleSeleniumErrorMessage(ex.Message) + "\n" + Program.HandleStackTraceString(ex.StackTrace));
                     return null; // Элемента еще нет на странице, продолжаем ждать
                 }
                 catch (StaleElementReferenceException ex)
                 {
-                    Program.logger.Error((ex.Message + "\n" + Program.HandleStackTraceString(ex.StackTrace)));
+                    Program.logger.Error(Program.HandleSeleniumErrorMessage(ex.Message) + "\n" + Program.HandleStackTraceString(ex.StackTrace));
                     return null; // Элемент устарел (перерисовывается DOM), продолжаем ждать
                 }
                 catch (Exception ex)
                 {
-                    Program.logger.Error((ex.Message + "\n" + Program.HandleStackTraceString(ex.StackTrace)));
+                    Program.logger.Error(Program.HandleSeleniumErrorMessage(ex.Message) + "\n" + Program.HandleStackTraceString(ex.StackTrace));
                     return null;
                 }
             });
         }
 		catch (Exception ex)
 		{
-            Program.logger.Error((ex.Message + "\n" + Program.HandleStackTraceString(ex.StackTrace)));
+            Program.logger.Error(Program.HandleSeleniumErrorMessage(ex.Message) + "\n" + Program.HandleStackTraceString(ex.StackTrace));
             return null;
 		}
     }
