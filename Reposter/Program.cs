@@ -839,8 +839,8 @@ internal class Program
             #region убрать рекламу
             try
             {
-                js.ExecuteScript("const toRemove = document.querySelector('div[id^='yandex']');if(toRemove){toRemove.remove();}");
-                js.ExecuteScript("const toRemove2 = document.querySelector('#rightColumn');if(toRemove2){toRemove2.remove();}");
+                js.ExecuteScript("const toRemove = document.querySelector(\"div[id^='yandex']\");if(toRemove){toRemove.remove();}");
+                js.ExecuteScript("const toRemove2 = document.querySelector(\"#rightColumn\");if(toRemove2){toRemove2.remove();}");
             }
             catch (Exception)
             {
@@ -1129,7 +1129,7 @@ internal class Program
                                 break; //?
                             }
                             logger.Info("Продолжаем пытаться выбрать из списка групп...");
-                            continue; //continue?
+                            break; //continue?
                         }
                         await Task.Delay(rnd.Next(1500, 3000));
                         string sel = "#reshare > div.posting_footer.js-posting-footer.__simple.__collapsable > div > div > div > div > div.posting_f_ac > button";
