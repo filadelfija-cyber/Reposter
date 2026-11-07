@@ -104,6 +104,7 @@ public static class SeleniumExtensions
 
     public static IWebElement WaitUntilClickable(this IWebDriver driver, By locator, int timeoutInSeconds = 10)
     {
+		Program.logger.Info($"Ожидание элемента: {locator.Criteria}");
         var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(timeoutInSeconds));
 
 		try

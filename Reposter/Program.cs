@@ -8,6 +8,7 @@ using MoreLinq;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.DevTools.V152.Debugger;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using Reposter;
@@ -75,6 +76,7 @@ internal class Program
         Stopwatch sw = Stopwatch.StartNew();
 
         DateTime buildDate = GetBuildDate(Assembly.GetExecutingAssembly());
+        Console.Title = $"Reposter v{Assembly.GetExecutingAssembly().GetName().Version}. Дата сборки: {buildDate:yyyy-MM-dd HH:mm:ss} UTC";
 
         logger.Info((object)$"Версия программы: {Assembly.GetExecutingAssembly().GetName().Version}");
         logger.Info((object)$"Дата сборки: {buildDate:yyyy-MM-dd HH:mm:ss} UTC");
@@ -146,6 +148,11 @@ internal class Program
         {
             try
             {
+                foreach (var process in Process.GetProcessesByName("chromedriver"))
+                {
+                    process.Kill();
+                }
+
                 Environment.SetEnvironmentVariable("SE_OFFLINE", "true");
                 //Environment.SetEnvironmentVariable("SE_DEBUG", "false");
                 //var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -739,10 +746,15 @@ internal class Program
             .ToList()
             .Last();
         logger.Info("Profile ID:" + pid);
+        if (pid == "A")
+        {
+            logger.Info("Не получилось войти в аккаунт. Переход к следующему...");
+            return;
+        }
         string groupsPageUrl = "https://ok.ru/profile/" + pid + "/groups/mine";
         await driver.GoToUrl(groupsPageUrl);
         js.ExecuteScript("const elementToRemove = document.querySelector(\"#hook_Block_PopularGroupsListBlock\");if (elementToRemove){elementToRemove.remove();}");
-        //WebDriverWait wait33 = new WebDriverWait(driver, TimeSpan.FromSeconds(10.0));
+
         IWebElement groupCountAsText = driver.WaitUntilClickable(By.CssSelector("span.filter_count"));
         int groupCount = int.Parse(groupCountAsText.Text);
         while (groupNamesHash.Count != groupCount)
@@ -995,22 +1007,14 @@ internal class Program
                             driver.TakeScreenshot();
                         }
                     }
-                    //try
-                    //{
-                    //    await FindAndPressShareButton(driver);
-                    //}
-                    //catch (Exception ex)
-                    //{
-                    //    logger.Error(ex);
-                    //    continue;
-                    //}
+
                     while (true)//цикл опубликовки в группы(модальное окно), может быть и меню из списка
                     {
                         #region убрать рекламу
                         try
                         {
-                            js.ExecuteAsyncScript("const toRemove = document.querySelector('div[id^='yandex']');if(toRemove){toRemove.remove();}");
-                            js.ExecuteAsyncScript("const toRemove2 = document.querySelector('#rightColumn');if(toRemove2){toRemove2.remove();}");
+                            js.ExecuteAsyncScript("const toRemove = document.querySelector(\"div[id^='yandex']\");if(toRemove){toRemove.remove();}");
+                            js.ExecuteAsyncScript("const toRemove2 = document.querySelector(\"#rightColumn\");if(toRemove2){toRemove2.remove();}");
                         }
                         catch (Exception ex)
                         {
@@ -1039,10 +1043,8 @@ internal class Program
                                 logger.Info("css selector is '#reshare_XpostGroupNameInput'");
                                 cssSelector = "#reshare_XpostGroupNameInput";
                             }
-                            //shareBtn2 = (IWebElement)js.ExecuteScript("return document.querySelector('{cssSelector}']');");
-                            //js.ExecuteScript($"document.querySelector('{cssSelector}').click();");//click
 
-                            js.ExecuteScript($"const element = document.querySelector(\"" + cssSelector + "\");if (element){element.value = '" + group.Value.Trim() + "';}");
+                            js.ExecuteScript($"const element = document.querySelector('" + cssSelector + "');if (element){element.value = '" + group.Value.Trim() + "';}");
                             await Task.Delay(rnd.Next(500, 1000));
                             shareBtn2.SendKeys(" ");
                             shareBtn2.SendKeys(Keys.Backspace);
@@ -1194,11 +1196,12 @@ internal class Program
     /// <returns></returns>
     private static async Task<IWebElement> FindAndPressShareButton(IWebDriver driver)
     {
+        await Task.Delay(1250);
         IWebElement shareInGroups = null;
         bool shared = false; //нажата ли кнопка "поделиться"?
-        //Пункт меню "Поделиться в группе"
-        //#reshare > div.posting_h > div.portlet_h > h3
-        await Task.Delay(1250);
+        int tryFindShareMenuCounter = 0;
+
+    basis: logger.Info("Старт функции FindAndPressShareButton");
         var modular = driver.Find(By.CssSelector("#reshare > div.posting_h > div.portlet_h > h3"), 1, true);
         if (modular != null)
         {
@@ -1220,7 +1223,9 @@ internal class Program
 
     Modular: if (useBtnOnPopupModularWindow)//по умолчанию истина, вроде не здесь должен быть этот код
         {
-            shareInGroups = driver.WaitUntilClickable(By.CssSelector("button[data-l='t,group']"), 10);
+            tryFindShareMenuCounter++;
+
+            shareInGroups = driver.WaitUntilClickable(By.CssSelector("button[data-l='t,group']"), 7);
             if (shareInGroups != null)
             {
                 logger.Info($"web element found: {shareInGroups.Text}");
@@ -1238,10 +1243,18 @@ internal class Program
             }
         }
 
+        if (tryFindShareMenuCounter > 7)
+        {
+            logger.Info("Меню или модальное окно не находятся, переходим снова к нажатию кнопки 'Поделиться'");
+            tryFindShareMenuCounter = 0;
+            goto basis;
+        }
+
         if (!shared)
         {
             useBtnOnPopupModularWindow = false;
-            shareInGroups = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div"), 30);
+            tryFindShareMenuCounter++;
+            shareInGroups = driver.WaitUntilClickable(By.CssSelector("div[id^=\"block_ShortcutMenu_null\"] > ul > div > a:nth-child(7) > div"), 7);
 
             if (shareInGroups == null)
             {
