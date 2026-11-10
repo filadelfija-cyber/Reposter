@@ -380,7 +380,7 @@ internal class Program
             stat.PromotionEndedDateTime = DateTime.Now;
             SaveIntermediateResultOnDisk();
         }
-        logger.Info((object)$"Программа отработала.  {DateTime.Now}");
+        logger.Info((object)$"Программа отработала.");
         logger.Info((object)$"Время работы программы: {sw.Elapsed}");
         if (status.IsStarted && status.ShowStatistics)
         {
@@ -906,7 +906,7 @@ internal class Program
                                 break;
                             }
 
-                            logger.Info("Нажата кнопка 'Поделиться'");
+                            //logger.Info("Нажата кнопка 'Поделиться'");
                             sharePressed = true;
                         }
                     }
@@ -1013,8 +1013,8 @@ internal class Program
                         #region убрать рекламу
                         try
                         {
-                            js.ExecuteAsyncScript("const toRemove = document.querySelector(\"div[id^='yandex']\");if(toRemove){toRemove.remove();}");
-                            js.ExecuteAsyncScript("const toRemove2 = document.querySelector(\"#rightColumn\");if(toRemove2){toRemove2.remove();}");
+                            js.ExecuteScript("const toRemove = document.querySelector(\"div[id^='yandex']\");if(toRemove){toRemove.remove();}");
+                            js.ExecuteScript("const toRemove2 = document.querySelector(\"#rightColumn\");if(toRemove2){toRemove2.remove();}");
                         }
                         catch (Exception ex)
                         {
@@ -1296,6 +1296,7 @@ internal class Program
                 goto Modular;
             }
         }
+        logger.Info("Выход из функции FindAndPressShareButton");
         return shareInGroups;
     }
 
