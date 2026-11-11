@@ -153,17 +153,18 @@ internal class Program
                     process.Kill();
                 }
 
-                Environment.SetEnvironmentVariable("SE_OFFLINE", "true");
+                //Environment.SetEnvironmentVariable("SE_OFFLINE", "true");
                 //Environment.SetEnvironmentVariable("SE_DEBUG", "false");
                 //var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 //Console.WriteLine($"{dir}\\chromedriver.exe");
                 //var service = ChromeDriverService.CreateDefaultService($"{Assembly.GetExecutingAssembly().Location}\\chromedriver.exe");//replace to x64 version
-                var service = ChromeDriverService.CreateDefaultService();
+                //var service = ChromeDriverService.CreateDefaultService();
 
-                service.EnableVerboseLogging = false;
-                service.LogLevel = OpenQA.Selenium.Chromium.ChromiumDriverLogLevel.Severe;
-                options.BrowserVersion = "154.0.8037.92";
-                driver = new ChromeDriver(service, options);//service
+                //service.EnableVerboseLogging = false;
+                //service.LogLevel = OpenQA.Selenium.Chromium.ChromiumDriverLogLevel.Severe;
+                //options.BrowserVersion = "154.0.8037.92";
+                //driver = new ChromeDriver(service, options);//service
+                driver = new ChromeDriver(options);
             }
             catch (Exception ex)
             {
