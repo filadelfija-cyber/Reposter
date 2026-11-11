@@ -243,15 +243,33 @@ internal class Program
                 }
                 catch (Exception ex)
                 {
-
+                    logger.Info(ex);
                 }
                 #endregion
 
                 IWebElement loginTextBox = driver.ClickElement(By.CssSelector("#field_email"), 20);
-                loginTextBox.Clear();
+                try
+                {
+                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+                    js.ExecuteScript("document.querySelector("#field_email").value = "";");
+                }
+                catch (Exception ex)
+                {
+                    logger.Info(ex);
+                }
+                //loginTextBox.Clear(); //staleelementreferenceexception...hmm...
                 loginTextBox.SendKeys(account.Login);
                 IWebElement passwordTextBox = driver.ClickElement(By.CssSelector("#field_password"), 20);
-                passwordTextBox.Clear();
+                try
+                {
+                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+                    js.ExecuteScript("document.querySelector("#field_password").value = "";");
+                }
+                catch (Exception ex)
+                {
+                    logger.Info(ex);
+                }
+                //passwordTextBox.Clear();
                 passwordTextBox.SendKeys(account.Password);
                 driver.ClickElement(By.CssSelector(":is(form > div.login-form-actions > input,button[label = 'Войти'])"), 20);
                 await Task.Delay(5000);
