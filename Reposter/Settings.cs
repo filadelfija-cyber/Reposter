@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace odnoklassniki_selenium;
+namespace Reposter;
 
 internal class Settings
 {

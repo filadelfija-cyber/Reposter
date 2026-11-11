@@ -1,4 +1,4 @@
-﻿namespace odnoklassniki_selenium
+﻿namespace Reposter
 {
     public class SeleniumSettings
     {

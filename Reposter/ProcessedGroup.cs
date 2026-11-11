@@ -1,6 +1,6 @@
 using System;
 
-namespace odnoklassniki_selenium;
+namespace Reposter;
 
 internal class ProcessedGroup
 {

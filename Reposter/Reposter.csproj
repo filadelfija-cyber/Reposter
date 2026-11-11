@@ -110,6 +110,8 @@
     <Compile Include="Account.cs" />
     <Compile Include="BotStatus.cs" />
     <Compile Include="FileDownloader.cs" />
+    <Compile Include="JavaScriptHelper.cs" />
+    <Compile Include="JavascriptFuncEnum.cs" />
     <Compile Include="MoreLinq\MoreEnumerable.Batch.cs" />
     <Compile Include="ProcessedAccount.cs" />
     <Compile Include="ProcessedGroup.cs" />

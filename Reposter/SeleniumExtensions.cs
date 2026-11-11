@@ -8,7 +8,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Reposter;
 
-namespace odnoklassniki_selenium;
+namespace Reposter;
 
 public static class SeleniumExtensions
 {

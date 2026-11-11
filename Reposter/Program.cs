@@ -27,7 +27,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 
-namespace odnoklassniki_selenium;
+namespace Reposter;
 
 internal class Program
 {
@@ -256,43 +256,9 @@ internal class Program
                     }
                 }
 
-                #region убрать рекламу
-                try
-                {
-                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
-                    js.ExecuteScript("const elementToRemove = document.querySelector(':is(div.trg-b-list,div.trg-b-wrap)');if(elementToRemove){elementToRemove.remove();}");
-                }
-                catch (Exception ex)
-                {
-                    logger.Info(ex);
-                }
-                #endregion
+                //await driver.RunJavascript(JavaScriptHelper.GetScriptCode(JavascriptFuncEnum.RemoveAds));
 
-                IWebElement loginTextBox = driver.ClickElement(By.CssSelector("#field_email"), 20);
-                try
-                {
-                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
-                    js.ExecuteScript("document.querySelector('#field_email').value = '';");
-                }
-                catch (Exception ex)
-                {
-                    logger.Info(ex);
-                }
-                //loginTextBox.Clear(); //staleelementreferenceexception...hmm...
-                loginTextBox.SendKeys(account.Login);
-                IWebElement passwordTextBox = driver.ClickElement(By.CssSelector("#field_password"), 20);
-                try
-                {
-                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
-                    js.ExecuteScript("document.querySelector('#field_password').value = '';");
-                }
-                catch (Exception ex)
-                {
-                    logger.Info(ex);
-                }
-                //passwordTextBox.Clear();
-                passwordTextBox.SendKeys(account.Password);
-                driver.ClickElement(By.CssSelector(":is(form > div.login-form-actions > input,button[label = 'Войти'])"), 20);
+                HandleLoginForm(account);
                 await Task.Delay(5000);
                 string isPageExist = driver.Find(By.CssSelector("isbody > div > h1"))?.Text;
                 if (isPageExist == "Этой страницы нет в OK" || driver.Url.TrimEnd('/') != "https://ok.ru")
@@ -434,6 +400,38 @@ internal class Program
         else if (settings.ExitAfterFinish)
         {
             driver.Quit();
+        }
+    }
+
+    private static void HandleLoginForm(Account account)
+    {
+        bool attemptWithoutErrors = false;
+        while (!attemptWithoutErrors)
+        {
+            try
+            {
+                IWebElement loginTextBox = driver.ClickElement(By.CssSelector("#field_email"), 20);
+                loginTextBox.Clear();
+                loginTextBox.SendKeys(account.Login);
+                //await driver.RunJavascript(JavaScriptHelper.GetScriptCode(JavascriptFuncEnum.ClearInputs),"#field_email");
+
+                //await driver.RunJavascript(JavaScriptHelper.GetScriptCode(JavascriptFuncEnum.PasteText), "#field_email",account.Login);
+
+                IWebElement passwordTextBox = driver.ClickElement(By.CssSelector("#field_password"), 20);
+                passwordTextBox.Clear();
+                passwordTextBox.SendKeys(account.Password);
+                //await driver.RunJavascript(JavaScriptHelper.GetScriptCode(JavascriptFuncEnum.ClearInputs), "#field_password");
+
+                //await driver.RunJavascript(JavaScriptHelper.GetScriptCode(JavascriptFuncEnum.PasteText), "#field_password", account.Password);
+
+                driver.ClickElement(By.CssSelector(":is(form > div.login-form-actions > input,button[label = 'Войти'])"), 20);
+                attemptWithoutErrors = true;
+                break;
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex);
+            }
         }
     }
 
