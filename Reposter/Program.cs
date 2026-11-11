@@ -8,7 +8,7 @@ using MoreLinq;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.DevTools.V152.Debugger;
+using OpenQA.Selenium.DevTools.V156.Debugger;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using Reposter;
@@ -81,11 +81,12 @@ internal class Program
         logger.Info((object)$"Версия программы: {Assembly.GetExecutingAssembly().GetName().Version}");
         logger.Info((object)$"Дата сборки: {buildDate:yyyy-MM-dd HH:mm:ss} UTC");
         logger.Info((object)$"Программа начала свою работу. {DateTime.Now}");
+        logger.Info("Последнюю версию можно найти здесь:\r\nhttps://github.com/filadelfija-cyber/reposter/releases/latest");
 
-        logger.Info("Для работы программы нужна установленная в системе версия хрома и хромдрайвера: \"154.0.8037.92\"");
-        logger.Info("https://storage.googleapis.com/chrome-for-testing-public/154.0.8037.92/win64/chrome-win64.zip\r\nhttps://storage.googleapis.com/chrome-for-testing-public/154.0.8037.92/win64/chromedriver-win64.zip");
-        logger.Info("Распаковать в \r\nC:\\Users\\<username>\\.cache\\selenium\\chromedriver\\win64\\154.0.8037.92" +
-                                "\r\nC:\\Users\\<username>\\.cache\\selenium\\chrome\\win64\\154.0.8037.92");
+        //logger.Info("Для работы программы нужна установленная в системе версия хрома и хромдрайвера: \"154.0.8037.92\"");
+        //logger.Info("https://storage.googleapis.com/chrome-for-testing-public/154.0.8037.92/win64/chrome-win64.zip\r\nhttps://storage.googleapis.com/chrome-for-testing-public/154.0.8037.92/win64/chromedriver-win64.zip");
+        //logger.Info("Распаковать в \r\nC:\\Users\\<username>\\.cache\\selenium\\chromedriver\\win64\\154.0.8037.92" +
+        //                        "\r\nC:\\Users\\<username>\\.cache\\selenium\\chrome\\win64\\154.0.8037.92");
 
         if (status.IsStarted && status.ShowStatistics)
         {
@@ -153,18 +154,36 @@ internal class Program
                     process.Kill();
                 }
 
-                //Environment.SetEnvironmentVariable("SE_OFFLINE", "true");
-                //Environment.SetEnvironmentVariable("SE_DEBUG", "false");
+                if (settings.Selenium != null)
+                {
+                    if (settings.Selenium.Offline)
+                    {
+                        Environment.SetEnvironmentVariable("SE_OFFLINE", "true");
+                    }
+                    if (settings.Selenium.Debug)
+                    {
+                        Environment.SetEnvironmentVariable("SE_DEBUG", "true");//достаточно самого параметра в окружении
+                    }
+                    if (string.IsNullOrWhiteSpace(settings.Selenium.BrowserVersion))
+                    {
+                        options.BrowserVersion = settings.Selenium.BrowserVersion;
+                    }
+                    //TODO Add path to chrome and webdriver and check paths for validity
+                    var service = ChromeDriverService.CreateDefaultService();
+                    if (settings.Selenium.EnableVerboseLogging)
+                    {
+                        service.EnableVerboseLogging = true;
+                    }
+                    service.LogLevel = OpenQA.Selenium.Chromium.ChromiumDriverLogLevel.Severe;
+                    driver = new ChromeDriver(service, options);
+                else
+                {
+                    driver = new ChromeDriver(options);
+                }
+
                 //var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 //Console.WriteLine($"{dir}\\chromedriver.exe");
                 //var service = ChromeDriverService.CreateDefaultService($"{Assembly.GetExecutingAssembly().Location}\\chromedriver.exe");//replace to x64 version
-                //var service = ChromeDriverService.CreateDefaultService();
-
-                //service.EnableVerboseLogging = false;
-                //service.LogLevel = OpenQA.Selenium.Chromium.ChromiumDriverLogLevel.Severe;
-                //options.BrowserVersion = "154.0.8037.92";
-                //driver = new ChromeDriver(service, options);//service
-                driver = new ChromeDriver(options);
             }
             catch (Exception ex)
             {

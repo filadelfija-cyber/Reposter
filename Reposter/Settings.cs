@@ -43,4 +43,6 @@ internal class Settings
 	public bool UseBot { get; set; }
 
 	public bool Test { get; set; } = false;
+
+    public SeleniumSettings Selenium  { get; set; }
 }
