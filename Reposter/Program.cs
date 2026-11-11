@@ -251,7 +251,7 @@ internal class Program
                 try
                 {
                     IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
-                    js.ExecuteScript("document.querySelector("#field_email").value = "";");
+                    js.ExecuteScript("document.querySelector('#field_email').value = '';");
                 }
                 catch (Exception ex)
                 {
@@ -263,7 +263,7 @@ internal class Program
                 try
                 {
                     IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
-                    js.ExecuteScript("document.querySelector("#field_password").value = "";");
+                    js.ExecuteScript("document.querySelector('#field_password').value = '';");
                 }
                 catch (Exception ex)
                 {
