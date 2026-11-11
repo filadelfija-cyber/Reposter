@@ -176,6 +176,7 @@ internal class Program
                     }
                     service.LogLevel = OpenQA.Selenium.Chromium.ChromiumDriverLogLevel.Severe;
                     driver = new ChromeDriver(service, options);
+                }
                 else
                 {
                     driver = new ChromeDriver(options);
