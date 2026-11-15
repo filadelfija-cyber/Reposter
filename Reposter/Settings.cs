@@ -45,4 +45,6 @@ internal class Settings
 	public bool Test { get; set; } = false;
 
     public SeleniumSettings Selenium  { get; set; }
+
+	public bool UpdateChrome { get; set; } = true;
 }

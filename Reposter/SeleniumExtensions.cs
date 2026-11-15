@@ -1,12 +1,10 @@
+using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
-using Reposter;
 
 namespace Reposter;
 

@@ -1,10 +1,10 @@
 {
   "Accounts": [
     {
-      "Login": "qer-ra-ra-ra",
-      "Password": "fylhtqnl1"
+      "Login": "login",
+      "Password": "password"
     }
-   ],
+  ],
   "AddComments": false,
   "ShareInGroups": true,
   "ShareInFriends": false,
@@ -19,5 +19,6 @@
   "RetryOnFaultyRun": true,
   "PageLoadStrategyEager": false,
   "UseBot": false,
-  "Test": false
+  "Test": false,
+  "UpdateChrome": true
 }

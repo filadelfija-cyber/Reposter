@@ -8,10 +8,8 @@ using MoreLinq;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.DevTools.V156.Debugger;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
-using Reposter;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,7 +21,6 @@ using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -153,6 +150,13 @@ internal class Program
                 {
                     process.Kill();
                 }
+
+                if (settings.UpdateChrome)//TODO: Move to selenium settings
+                {
+                    await ChromeVersionManager.UpdateVersion();
+                }
+
+                Environment.SetEnvironmentVariable("SE_OFFLINE", "true");
 
                 if (settings.Selenium != null)
                 {
